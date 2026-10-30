@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Library Management System</title>
+
+    <style>
+        body {
+            font-family: Arial;
+            text-align: center;
+            background: whitesmoke;
+        }
+
+        h2 {
+            color: green;
+        }
+
+        input, select, button {
+            padding: 10px;
+            margin: 5px;
+        }
+
+        button {
+            background: green;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+
+        table {
+            margin: 15px auto;
+            border-collapse: collapse;
+            background: white;
+        }
+
+        th, td {
+            border: 1px solid black;
+            padding: 10px;
+        }
+
+        #message {
+            color: blue;
+        }
+    </style>
+</head>
+
+<body>
+
+<h1>Library Book Management System</h1>
+
+<h2>Add Book</h2>
+
+<input type="text" id="bookId" placeholder="Book ID">
+<input type="text" id="bookName" placeholder="Book Name">
+<button onclick="addBook()">Add Book</button>
+
+<h2>Register Student</h2>
+
+<input type="text" id="studentId" placeholder="Student ID">
+<input type="text" id="studentName" placeholder="Student Name">
+<button onclick="addStudent()">Add Student</button>
+
+<h2>Issue Book</h2>
+
+<select id="selectBook"></select>
+<select id="selectStudent"></select>
+<button onclick="issueBook()">Issue</button>
+
+<h2>Return Book</h2>
+
+<input type="text" id="returnId" placeholder="Enter Book ID">
+<button onclick="returnBook()">Return</button>
+
+<h3 id="message"></h3>
+
+<h2>Book List</h2>
+
+<table>
+    <tr>
+        <th>Book ID</th>
+        <th>Book Name</th>
+        <th>Status</th>
+    </tr>
+    <tbody id="bookList"></tbody>
+</table>
+
+<h2>Student List</h2>
+
+<table>
+    <tr>
+        <th>Student ID</th>
+        <th>Student Name</th>
+    </tr>
+    <tbody id="studentList"></tbody>
+</table>
+
+<h2>Issued Books</h2>
+
+<table>
+    <tr>
+        <th>Book ID</th>
+        <th>Book Name</th>
+        <th>Student Name</th>
+    </tr>
+    <tbody id="issuedList"></tbody>
+</table>
+
+<script>
+
+let books = [];
+let students = [];
+let issued = [];
+
+function addBook() {
+    let id = document.getElementById("bookId").value.trim();
+    let name = document.getElementById("bookName").value.trim();
+
+    if (id == "" || name == "") {
+        alert("Enter book details");
+        return;
+    }
+
+    for (let b of books) {
+        if (b.id == id) {
+            alert("Book ID already exists");
+            return;
+        }
+    }
+
+    books.push({id: id, name: name});
+
+    document.getElementById("bookId").value = "";
+    document.getElementById("bookName").value = "";
+
+    document.getElementById("message").innerText = "BOOK ADDED";
+    display();
+}
+
+function addStudent() {
+    let id = document.getElementById("studentId").value.trim();
+    let name = document.getElementById("studentName").value.trim();
+
+    if (id == "" || name == "") {
+        alert("Enter student details");
+        return;
+    }
+
+    for (let s of students) {
+        if (s.id == id) {
+            alert("Student ID already exists");
+            return;
+        }
+    }
+
+    students.push({id: id, name: name});
+
+    document.getElementById("studentId").value = "";
+    document.getElementById("studentName").value = "";
+
+    document.getElementById("message").innerText = "STUDENT ADDED";
+    display();
+}
+
+function issueBook() {
+    let bookId = document.getElementById("selectBook").value;
+    let studentId = document.getElementById("selectStudent").value;
+
+    if (bookId == "" || studentId == "") {
+        document.getElementById("message").innerText =
+            "SELECT BOOK AND STUDENT";
+        return;
+    }
+
+    for (let i of issued) {
+        if (i.bookId == bookId) {
+            document.getElementById("message").innerText =
+                "BOOK ALREADY ISSUED";
+            return;
+        }
+    }
+
+    issued.push({bookId: bookId, studentId: studentId});
+
+    document.getElementById("message").innerText =
+        "BOOK ISSUED SUCCESSFULLY";
+
+    display();
+}
+
+function returnBook() {
+    let id = document.getElementById("returnId").value.trim();
+
+    if (id == "") {
+        document.getElementById("message").innerText =
+            "ENTER BOOK ID";
+        return;
+    }
+
+    for (let i = 0; i < issued.length; i++) {
+        if (issued[i].bookId == id) {
+            issued.splice(i, 1);
+
+            document.getElementById("message").innerText =
+                "BOOK RETURNED SUCCESSFULLY";
+
+            document.getElementById("returnId").value = "";
+
+            display();
+            return;
+        }
+    }
+
+    document.getElementById("message").innerText =
+        "BOOK NOT ISSUED";
+}
+
+function display() {
+    let bookList = document.getElementById("bookList");
+    let studentList = document.getElementById("studentList");
+    let issuedList = document.getElementById("issuedList");
+    let selectBook = document.getElementById("selectBook");
+    let selectStudent = document.getElementById("selectStudent");
+
+    bookList.innerHTML = "";
+    studentList.innerHTML = "";
+    issuedList.innerHTML = "";
+
+    selectBook.innerHTML = '<option value="">Select Book</option>';
+    selectStudent.innerHTML = '<option value="">Select Student</option>';
+
+    for (let b of books) {
+        let status = "Available";
+
+        for (let i of issued) {
+            if (i.bookId == b.id) {
+                status = "Issued";
+            }
+        }
+
+        bookList.innerHTML += `
+            <tr>
+                <td>${b.id}</td>
+                <td>${b.name}</td>
+                <td>${status}</td>
+            </tr>
+        `;
+
+        selectBook.innerHTML +=
+            `<option value="${b.id}">${b.name}</option>`;
+    }
+
+    for (let s of students) {
+        studentList.innerHTML += `
+            <tr>
+                <td>${s.id}</td>
+                <td>${s.name}</td>
+            </tr>
+        `;
+
+        selectStudent.innerHTML +=
+            `<option value="${s.id}">${s.name}</option>`;
+    }
+
+    for (let i of issued) {
+        let book = books.find(b => b.id == i.bookId);
+        let student = students.find(s => s.id == i.studentId);
+
+        issuedList.innerHTML += `
+            <tr>
+                <td>${book.id}</td>
+                <td>${book.name}</td>
+                <td>${student.name}</td>
+            </tr>
+        `;
+    }
+}
+
+display();
+
+</script>
+
+</body>
+</html>
